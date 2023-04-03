@@ -422,7 +422,7 @@ function createRoute(source, target, release) {
 function updateRouteInformation(features, release) {
   var content = document.getElementById('information-content');
   var text = '';
-  if (features.length > 0 && release) {
+  if (features.length > 0) {
     var segments = [];
     var segment = {};
     var cost = 0;
