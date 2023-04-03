@@ -15,11 +15,12 @@ import OSM from 'ol/source/OSM';
 import GeoJSON from 'ol/format/GeoJSON';
 import Translate from 'ol/interaction/Translate';
 import Attribution from 'ol/control/Attribution';
+import {defaults} from 'ol/control/defaults';
 import {all} from 'ol/loadingstrategy';
 import Overlay from 'ol/Overlay';
 import prettyMilliseconds from 'pretty-ms';
 
-const wfsUrl = 'https://jaxartes.net/geoserver';
+const wfsUrl = import.meta.env.VITE_SERVER_URL;
 const wfsFeaturePrefix = 'ottoman';
 const wfsOutputFormat = 'application/json';
 const wfsVersion = '2.0.0';
@@ -263,7 +264,7 @@ const pathLayer = new VectorLayer({
 const routeLayer = new VectorLayer({
   style: new Style({
     stroke: new Stroke({
-      color: [0, 0, 255, 0.6],
+      color: [0, 0, 255, 0.4],
       width: 8,
     })
   })
@@ -286,6 +287,7 @@ var markerLayer = new VectorLayer({
 // MAP
 var map = new Map({
   target: 'map',
+  controls: defaults({attribution: false}).extend([attribution]),
   layers: [
     new TileLayer({source: tileSource}),
     pathLayer,
