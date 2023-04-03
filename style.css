@@ -22,13 +22,18 @@ html, body {
   min-width: 280px;
   width: fit-content;
 }
-.ol-popup:after, .ol-popup:before {
-  top: 100%;
-  border: solid transparent;
-  content: " ";
-  height: 0;
-  width: 0;
-  position: absolute;
-  pointer-events: none;
+
+#information {
+  font-family: serif;
+  font-size: 0.8em;
+  top: 15px;
+  right: 15px;
+  width: 33%;
+  min-width: 280px;
 }
 
+ul,
+li {
+  margin-left: 10px;
+  padding-left: 0px;
+}

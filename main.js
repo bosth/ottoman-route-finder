@@ -28,6 +28,7 @@ const key = 'yvGZ8CUmA6zbqBiHuxk5';
 var allowRefresh = true;
 setInterval(function(){allowRefresh = true}, 30);
 
+
 // STYLES
 const pathStyle = function(feature) {
   var mode = feature.get('mode');
@@ -315,7 +316,7 @@ map.addInteraction(movingInteraction2);
 
 // CALLBACKS
 function onMarkerMove(event) {
-  var snap = false;
+  var release = false;
   if (event.type == 'translating') {
     if (allowRefresh) {
       allowRefresh = false;
@@ -324,17 +325,17 @@ function onMarkerMove(event) {
     }
   }
   if (event.type == 'translateend') {
-    snap = true;
+    release = true;
   }
   var marker = event.features.item(0);
   var coordinates = event.coordinate;
   var tolerance = event.target.map_.getView().getResolution() * 40;
-  updateMarker(marker, coordinates, tolerance, snap);
+  updateMarker(marker, coordinates, tolerance, release);
 }
 
 
 // LOGIC
-function updateMarker(marker, coordinates, tolerance, snap) {
+function updateMarker(marker, coordinates, tolerance, release) {
   var x = coordinates[0];
   var y = coordinates[1];
 
@@ -357,7 +358,7 @@ function updateMarker(marker, coordinates, tolerance, snap) {
       var source;
       var target;
       if (gj.length > 0) {
-        if (snap) {
+        if (release) {
           marker.setProperties(gj[0].getProperties());
           source = sourceMarker;
           target = targetMarker;
@@ -370,10 +371,10 @@ function updateMarker(marker, coordinates, tolerance, snap) {
             target = gj[0];
           }
         }
-        createRoute(source.getProperties().id, target.getProperties().id);
+        createRoute(source.getProperties().id, target.getProperties().id, release);
       } else {
         routeLayer.setSource(null);
-        if (snap) {
+        if (release) {
           if (marker == sourceMarker) {
             source = null;
           } else {
@@ -386,7 +387,7 @@ function updateMarker(marker, coordinates, tolerance, snap) {
   wfsRequest.send();
 }
 
-function createRoute(source, target) {
+function createRoute(source, target, release) {
   if (source === undefined || target === undefined) {
     return;
   }
@@ -411,9 +412,64 @@ function createRoute(source, target) {
         }
       });
       routeLayer.setSource(wfsSource);
+      var gj = new GeoJSON().readFeatures(wfsRequest.responseText);
+      updateRouteInformation(gj, release);
     }
   };
   wfsRequest.send();
+}
+
+function updateRouteInformation(features, release) {
+  var content = document.getElementById('information-content');
+  var text = '';
+  if (features.length > 0 && release) {
+    var segments = [];
+    var segment = {};
+    var cost = 0;
+    var lastMode = null;
+    var places = [];
+    features.forEach(function(f) {
+      if (f.get('mode') == lastMode) {
+        cost += f.get('cost');
+        places.push(f.get('target'));
+      } else {
+        if (lastMode != null) {
+          segments.push(segment);
+        }
+        segment = {};
+        cost = f.get('cost');
+        places = [f.get('source')];
+        places.push(f.get('target'));
+        lastMode = f.get('mode');
+      }
+      segment['cost'] = cost;
+      segment['mode'] = lastMode;
+      segment['places'] = places;
+    });
+
+    segments.push(segment);
+    var totalCost = 0;
+    text += "<ul>";
+    segments.forEach(function(segment) {
+      totalCost += segment['cost'];
+      places = segment['places'];
+      var s = places.shift();
+      var e = places.pop();
+      
+      text += '<li><b>' + s + '</b> to <b>' + e + '</b>';
+      if (places.length > 0) {
+        text += ' via <em>' + places.join('</em>, <em>');
+      }
+      text += '</em> (' + segment['mode'] + ', ' + tripTime(segment['cost']) + ')</li>';
+    });
+    text += '</ul>';
+    text += 'Total trip time: ' + tripTime(totalCost);
+  }
+  content.innerHTML = text;
+}
+
+function tripTime(hours) {
+  return prettyMilliseconds(hours * 60 * 60 * 1000, {compact: true});
 }
 
 updateMarker(sourceMarker, sourceMarker.getGeometry().getCoordinates(), 10000, true);
@@ -439,10 +495,9 @@ map.on('pointermove', function(evt) {
     var coord = evt.coordinate;
     popup.setPosition(coord);
     var content = document.getElementById('popup-content');
-    var cost = prettyMilliseconds(feature.get('cost') * 60 * 60 * 1000, {compact: true});
+    var cost = tripTime(feature.get('cost'));
     var text = feature.get('source') + ' - ' + feature.get('target') +
       '<br/><em>' + cost + ' by ' + feature.get('mode') + '</em>';
-
     content.innerHTML = text;
     popup.getElement().style.display = 'block';
   } else {
