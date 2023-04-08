@@ -471,6 +471,7 @@ function updateRouteInformation(features, release) {
     text += '</ul>';
     text += 'Total trip time: ' + tripTime(totalCost);
   }
+  text += "<div class=blog>Read about how this was made <a href='https://www.jaxartes.net/pages/ottoman-travel/'>here</a>.</div>";
   content.innerHTML = text;
 }
 

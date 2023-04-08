@@ -37,3 +37,10 @@ li {
   margin-left: 10px;
   padding-left: 0px;
 }
+
+.blog {
+  font-family: serif;
+  font-size: 0.7;
+  font-style: italic;
+  text-align: right;
+}
