@@ -10,7 +10,7 @@
     "vite": "^4.0.4"
   },
   "dependencies": {
-    "ol": "latest",
-    "pretty-ms": "^8.0.0"
+    "humanize-duration": "^3.28.0",
+    "ol": "latest"
   }
 }

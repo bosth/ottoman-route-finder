@@ -18,7 +18,8 @@ import Attribution from 'ol/control/Attribution';
 import {defaults} from 'ol/control/defaults';
 import {all} from 'ol/loadingstrategy';
 import Overlay from 'ol/Overlay';
-import prettyMilliseconds from 'pretty-ms';
+import humanizeDuration from 'humanize-duration';
+
 
 const wfsUrl = import.meta.env.VITE_SERVER_URL;
 const wfsFeaturePrefix = 'ottoman';
@@ -207,10 +208,10 @@ const placeStyle = function(feature) {
 
 // FEATURES
 var sourceMarker = new Feature({
-  geometry: new Point(fromLonLat([30, 40.5])),
+  geometry: new Point(fromLonLat([29, 41])),
 });
 var targetMarker = new Feature({
-  geometry: new Point(fromLonLat([29, 41])),
+  geometry: new Point(fromLonLat([27.5, 41])),
 });
 
 
@@ -297,7 +298,7 @@ var map = new Map({
     markerLayer,
   ],
   view: new View({
-    center: fromLonLat([30, 41]),
+    center: fromLonLat([29, 41]),
     zoom: 8,
   }),
 });
@@ -360,6 +361,9 @@ function updateMarker(marker, coordinates, tolerance, release) {
       if (gj.length > 0) {
         if (release) {
           marker.setProperties(gj[0].getProperties());
+          //if (marker == sourceMarker || marker == targetMarker) {
+          //  return; // nothing has changed so don't bother redrawing
+          //}
           source = sourceMarker;
           target = targetMarker;
         } else {
@@ -447,6 +451,8 @@ function updateRouteInformation(features, release) {
       segment['places'] = places;
     });
 
+    text = '<h2>' + features[0].get('source') + ' to ' + features.slice(-1)[0].get('target') + '</h2>';
+
     segments.push(segment);
     var totalCost = 0;
     text += "<ul>";
@@ -469,7 +475,7 @@ function updateRouteInformation(features, release) {
 }
 
 function tripTime(hours) {
-  return prettyMilliseconds(hours * 60 * 60 * 1000, {compact: true});
+  return humanizeDuration(hours * 60 * 60 * 1000, {round: true, units: ["d", "h", "m"], largest: 2});
 }
 
 updateMarker(sourceMarker, sourceMarker.getGeometry().getCoordinates(), 10000, true);
