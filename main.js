@@ -256,11 +256,13 @@ var placeLayer = new VectorLayer({
   source: placeSource,
   style: placeStyle,
   declutter: true,
+  crossOrigin: 'anonymous'
 });
 
 const pathLayer = new VectorLayer({
   source: pathSource,
-  style: pathStyle
+  style: pathStyle,
+  crossOrigin: 'anonymous'
 });
 
 const routeLayer = new VectorLayer({

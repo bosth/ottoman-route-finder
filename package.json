@@ -1,15 +1,19 @@
 {
-  "name": "osm",
+  "name": "ottoman-route-finder",
+  "homepage": "https://bosth.github.io/ottoman-route-finder/",
   "version": "1.0.0",
   "scripts": {
     "start": "VITE_SERVER_URL='http://localhost:8080/geoserver' vite",
     "build": "VITE_SERVER_URL='https://jaxartes.net/geoserver' vite build",
-    "serve": "vite preview"
+    "serve": "VITE_SERVER_URL='http://localhost:8080/geoserver' vite preview",
+    "predeploy": "VITE_SERVER_URL='https://jaxartes.net/geoserver' vite build",
+    "deploy": "gh-pages -d dist"
   },
   "devDependencies": {
     "vite": "^4.0.4"
   },
   "dependencies": {
+    "gh-pages": "^5.0.0",
     "humanize-duration": "^3.28.0",
     "ol": "latest"
   }
