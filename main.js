@@ -1,17 +1,13 @@
 import "./style.css";
 import {Map, View} from "ol";
 import {fromLonLat} from 'ol/proj';
-import WFS from 'ol/format/WFS';
 import Feature from 'ol/Feature';
-import Point from 'ol/geom/Point';
 import TileLayer from "ol/layer/Tile";
-import TileWMS from "ol/source/TileWMS";
 import TileJSON from "ol/source/TileJSON";
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import {Icon, Circle, Fill, Stroke, Style, Text, RegularShape} from 'ol/style';
 import Collection from "ol/Collection";
-import OSM from 'ol/source/OSM';
 import GeoJSON from 'ol/format/GeoJSON';
 import Translate from 'ol/interaction/Translate';
 import Attribution from 'ol/control/Attribution';
@@ -28,7 +24,6 @@ const wfsVersion = '2.0.0';
 const key = 'yvGZ8CUmA6zbqBiHuxk5';
 var allowRefresh = true;
 setInterval(function(){allowRefresh = true}, 30);
-
 
 // STYLES
 const pathStyle = function(feature) {
@@ -115,7 +110,7 @@ const pathStyle = function(feature) {
   return style;
 };
 
-const placeStyle = function(feature) {
+const nodeStyle = function(feature) {
   var rank = feature.get('rank');
   var image;
   switch (rank) {
@@ -206,17 +201,8 @@ const placeStyle = function(feature) {
 };
 
 
-// FEATURES
-var sourceMarker = new Feature({
-  geometry: new Point(fromLonLat([29, 41])),
-});
-var targetMarker = new Feature({
-  geometry: new Point(fromLonLat([27.5, 41])),
-});
-
-
 // SOURCES
-var placeSource = new VectorSource({
+var nodeSource = new VectorSource({
   format: new GeoJSON(),
   url: function (extent) {
     return (
@@ -252,9 +238,9 @@ const tileSource = new TileJSON({
 
 
 // LAYERS
-var placeLayer = new VectorLayer({
-  source: placeSource,
-  style: placeStyle,
+var nodeLayer = new VectorLayer({
+  source: nodeSource,
+  style: nodeStyle,
   declutter: true,
   crossOrigin: 'anonymous'
 });
@@ -274,9 +260,11 @@ const routeLayer = new VectorLayer({
   })
 });
 
+var sourceMarker;
+var targetMarker;
 var markerLayer = new VectorLayer({
   source: new VectorSource({
-    features: [sourceMarker, targetMarker],
+    features: [],
   }),
   style: new Style({
     image: new Icon({
@@ -287,6 +275,34 @@ var markerLayer = new VectorLayer({
   }),
 });
 
+function randomMarker() {
+  var i = Math.floor(Math.random() * nodeLayer.getSource().getFeatures().length);
+  var feature = nodeLayer.getSource().getFeatures()[i];
+  return new Feature({
+    geometry: feature.getGeometry().clone(),
+    node: feature
+  });
+}
+
+nodeSource.on('change', function() {
+  sourceMarker = randomMarker();
+  targetMarker = randomMarker();
+  markerLayer.getSource().addFeature(sourceMarker);
+  markerLayer.getSource().addFeature(targetMarker);
+  // INTERACTIONS
+  var movingInteraction1 = new Translate({
+    features: new Collection([sourceMarker]),
+  });
+  var movingInteraction2 = new Translate({
+    features: new Collection([targetMarker]),
+  });
+  movingInteraction1.on(['translateend', 'translating'], onMarkerMove);
+  movingInteraction2.on(['translateend', 'translating'], onMarkerMove);
+  map.addInteraction(movingInteraction1);
+  map.addInteraction(movingInteraction2);
+  createRoute(sourceMarker.get("node"), targetMarker.get("node"), true);
+});
+
 
 // MAP
 var map = new Map({
@@ -295,31 +311,18 @@ var map = new Map({
   layers: [
     new TileLayer({source: tileSource}),
     pathLayer,
-    placeLayer,
+    nodeLayer,
     routeLayer,
     markerLayer,
   ],
   view: new View({
     center: fromLonLat([29, 41]),
-    zoom: 8,
+    zoom: 6,
   }),
 });
 
-// INTERACTIONS
-var movingInteraction1 = new Translate({
-  features: new Collection([sourceMarker]),
-});
-var movingInteraction2 = new Translate({
-  features: new Collection([targetMarker]),
-});
-movingInteraction1.on(['translateend', 'translating'], onMarkerMove);
-movingInteraction2.on(['translateend', 'translating'], onMarkerMove);
-map.addInteraction(movingInteraction1);
-map.addInteraction(movingInteraction2);
-
 // CALLBACKS
 function onMarkerMove(event) {
-  var release = false;
   if (event.type == 'translating') {
     if (allowRefresh) {
       allowRefresh = false;
@@ -327,76 +330,62 @@ function onMarkerMove(event) {
       return;
     }
   }
+  var pixel = map.getPixelFromCoordinate(event.coordinate);
+  var node = null;
+  var rank = -1;
+  map.forEachFeatureAtPixel(pixel, function(feature) {
+    if (feature.getProperties()["rank"] > rank) {
+      rank = feature.getProperties["rank"];
+      node = feature;
+    }
+  }, {
+    layerFilter: function(layer) {
+      return layer === nodeLayer;
+    },
+    "hitTolerance" : 20});
+  var release = false;
   if (event.type == 'translateend') {
     release = true;
   }
-  var marker = event.features.item(0);
-  var coordinates = event.coordinate;
-  var tolerance = event.target.map_.getView().getResolution() * 40;
-  updateMarker(marker, coordinates, tolerance, release);
+  updateMarker(event.features.item(0), node, release);
 }
-
 
 // LOGIC
-function updateMarker(marker, coordinates, tolerance, release) {
-  var x = coordinates[0];
-  var y = coordinates[1];
+function updateMarker(marker, node, release) {
+  var source;
+  var target;
 
-  var wfsRequest = new XMLHttpRequest();
-  var wfsParams = 'service=WFS&' +
-      'version=' + wfsVersion + '&' +
-      'request=GetFeature&' +
-      'typeNames=' + wfsFeaturePrefix + ':' + 'node_proximity' + '&' +
-      'outputFormat=' + wfsOutputFormat + '&' +
-      'srsname=EPSG:3857&' +
-      'viewparams=' +
-        'x:' + x + ';' +
-        'y:' + y + ';' +
-        'tolerance:' + tolerance;
-  var wfsUrlWithParams = wfsUrl + '/ows/?' + wfsParams;
-  wfsRequest.open('GET', wfsUrlWithParams, true);
-  wfsRequest.onreadystatechange = function() {
-    if (wfsRequest.readyState == 4 && wfsRequest.status == 200) {
-      var gj = new GeoJSON().readFeatures(wfsRequest.responseText);
-      var source;
-      var target;
-      if (gj.length > 0) {
-        if (release) {
-          marker.setProperties(gj[0].getProperties());
-          //if (marker == sourceMarker || marker == targetMarker) {
-          //  return; // nothing has changed so don't bother redrawing
-          //}
-          source = sourceMarker;
-          target = targetMarker;
-        } else {
-          if (marker == sourceMarker) {
-            source = gj[0];
-            target = targetMarker;
-          } else {
-            source = sourceMarker;
-            target = gj[0];
-          }
-        }
-        createRoute(source.getProperties().id, target.getProperties().id, release);
+  if (node) {
+    if (release) {
+      marker.setGeometry(node.getGeometry().clone());
+      if (marker.get("node") == node) {
+        return;
+      }
+      marker.set("node", node);
+      source = sourceMarker.get("node");
+      target = targetMarker.get("node");
+    } else {
+      if (marker == sourceMarker) {
+        source = node;
+        target = targetMarker.get("node");
       } else {
-        routeLayer.setSource(null);
-        if (release) {
-          if (marker == sourceMarker) {
-            source = null;
-          } else {
-            target = null;
-          }
-        }
+        source = sourceMarker.get("node");
+        target = node;
       }
     }
-  };
-  wfsRequest.send();
+    createRoute(source, target, release);
+  } else {
+    routeLayer.setSource(null);
+  }
 }
+
 
 function createRoute(source, target, release) {
   if (source === undefined || target === undefined) {
     return;
   }
+  var sourceId = source.getId().split(".")[1];
+  var targetId = target.getId().split(".")[1];
   var wfsRequest = new XMLHttpRequest();
   var wfsParams = 'service=WFS&' +
       'version=' + wfsVersion + '&' +
@@ -405,8 +394,8 @@ function createRoute(source, target, release) {
       'outputFormat=' + wfsOutputFormat + '&' +
       'srsname=EPSG:3857' + '&' +
       'viewparams=' +
-      'source:' + source + ';' +
-      'target:' + target + ';';
+      'source:' + sourceId + ';' +
+      'target:' + targetId;
   var wfsUrlWithParams = wfsUrl + '/ows/?' + wfsParams;
   wfsRequest.open('GET', wfsUrlWithParams, true);
   wfsRequest.onreadystatechange = function() {
@@ -433,24 +422,24 @@ function updateRouteInformation(features, release) {
     var segment = {};
     var cost = 0;
     var lastMode = null;
-    var places = [];
+    var nodes = [];
     features.forEach(function(f) {
       if (f.get('mode') == lastMode) {
         cost += f.get('cost');
-        places.push(f.get('target'));
+        nodes.push(f.get('target'));
       } else {
         if (lastMode != null) {
           segments.push(segment);
         }
         segment = {};
         cost = f.get('cost');
-        places = [f.get('source')];
-        places.push(f.get('target'));
+        nodes = [f.get('source')];
+        nodes.push(f.get('target'));
         lastMode = f.get('mode');
       }
       segment['cost'] = cost;
       segment['mode'] = lastMode;
-      segment['places'] = places;
+      segment['nodes'] = nodes;
     });
 
     text = '<h2>' + features[0].get('source') + ' to ' + features.slice(-1)[0].get('target') + '</h2>';
@@ -460,13 +449,13 @@ function updateRouteInformation(features, release) {
     text += "<ul>";
     segments.forEach(function(segment) {
       totalCost += segment['cost'];
-      places = segment['places'];
-      var s = places.shift();
-      var e = places.pop();
+      nodes = segment['nodes'];
+      var s = nodes.shift();
+      var e = nodes.pop();
       
       text += '<li><b>' + s + '</b> to <b>' + e + '</b>';
-      if (places.length > 0) {
-        text += ' via <em>' + places.join('</em>, <em>');
+      if (nodes.length > 0) {
+        text += ' via <em>' + nodes.join('</em>, <em>');
       }
       text += '</em> (' + segment['mode'] + ', ' + tripTime(segment['cost']) + ')</li>';
     });
@@ -479,9 +468,6 @@ function updateRouteInformation(features, release) {
 function tripTime(hours) {
   return humanizeDuration(hours * 60 * 60 * 1000, {round: true, units: ["d", "h", "m"], largest: 2});
 }
-
-updateMarker(sourceMarker, sourceMarker.getGeometry().getCoordinates(), 10000, true);
-updateMarker(targetMarker, targetMarker.getGeometry().getCoordinates(), 10000, true);
 
 var popup = new Overlay({
   element: document.getElementById('popup'),
