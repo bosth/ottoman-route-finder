@@ -460,7 +460,7 @@ function updateRouteInformation(features, release) {
       text += '</em> (' + segment['mode'] + ', ' + tripTime(segment['cost']) + ')</li>';
     });
     text += '</ul>';
-    text += 'Total trip time: ' + tripTime(totalCost);
+    text += 'Total travel time: ' + tripTime(totalCost);
   }
   content.innerHTML = text;
 }
