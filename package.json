@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "scripts": {
     "start": "VITE_SERVER_URL='http://localhost:8080/geoserver' vite",
-    "build": "VITE_SERVER_URL='https://jaxartes.net/geoserver' vite build",
+    "build": "VITE_SERVER_URL='https://geo.jaxartes.net/geoserver' vite build",
     "serve": "VITE_SERVER_URL='http://localhost:8080/geoserver' vite preview",
-    "predeploy": "VITE_SERVER_URL='https://jaxartes.net/geoserver' vite build",
+    "predeploy": "VITE_SERVER_URL='https://geo.jaxartes.net/geoserver' vite build",
     "deploy": "gh-pages -d dist"
   },
   "devDependencies": {
