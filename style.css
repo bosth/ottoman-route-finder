@@ -44,3 +44,27 @@ li {
   font-style: italic;
   text-align: right;
 }
+
+.minimize-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    background-color: #007bff; /* Blue background */
+    border: none;
+    border-radius: 3px;
+    color: white; /* White text */
+    vertical-align: bottom;
+    font-size: 10px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.minimize-btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.minimized .blog,
+.minimized #information-content {
+    display: none;
+}
