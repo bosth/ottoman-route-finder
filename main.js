@@ -414,6 +414,8 @@ function createRoute(source, target, release) {
   wfsRequest.send();
 }
 
+
+
 function updateRouteInformation(features, release) {
   var content = document.getElementById('information-content');
   var text = '';
@@ -446,22 +448,27 @@ function updateRouteInformation(features, release) {
 
     segments.push(segment);
     var totalCost = 0;
-    text += "<ul>";
+    var n = 0;
+
     segments.forEach(function(segment) {
+      n += 1;
       totalCost += segment['cost'];
       nodes = segment['nodes'];
       var s = nodes.shift();
       var e = nodes.pop();
-      
-      text += '<li><b>' + s + '</b> to <b>' + e + '</b>';
+      var id = 'route-detail' + n;
+      text += '<p>';
+      text += '<b>' + s + '</b> to <b>' + e + '</b>';
+      text += ' by ' + segment['mode'] + ' (' + tripTime(segment['cost']) + ')';
       if (nodes.length > 0) {
-        text += ' via <em>' + nodes.join('</em>, <em>');
+        text += ' <span class="route-detail-click" onclick="toggleContent(\'' + id + '\')">[details]</span>';
+        text += '<span id="' + id + '" class="route-detail"> via <em>' + nodes.join('</em>, <em>');
+        text += '</em></span>';
       }
-      text += '</em> (' + segment['mode'] + ', ' + tripTime(segment['cost']) + ')</li>';
+      text += '</p>';
     });
-    text += '</ul>';
-    text += 'Total travel time: ' + tripTime(totalCost);
   }
+
   content.innerHTML = text;
 }
 

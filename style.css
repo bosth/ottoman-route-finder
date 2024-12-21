@@ -68,3 +68,17 @@ li {
 .minimized #information-content {
     display: none;
 }
+
+.route-detail {
+    display: none;
+    text-indent: -24px;
+    padding-left: 36px;
+    font-size: 80%;
+}
+
+.route-detail-click {
+    cursor: pointer;
+    color: #007bff;
+    font-size: 67%;
+    vertical-align: center;
+}
