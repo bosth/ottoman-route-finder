@@ -417,7 +417,8 @@ function createRoute(source, target, release) {
 
 
 function updateRouteInformation(features, release) {
-  var content = document.getElementById('information-content');
+  var titleElement = document.getElementById('information-title');
+  var contentElement = document.getElementById('information-content');
   var text = '';
   if (features.length > 0) {
     var segments = [];
@@ -444,12 +445,11 @@ function updateRouteInformation(features, release) {
       segment['nodes'] = nodes;
     });
 
-    text = '<h2>' + features[0].get('source') + ' to ' + features.slice(-1)[0].get('target') + '</h2>';
-
     segments.push(segment);
     var totalCost = 0;
     var n = 0;
 
+    text += '<ol>';
     segments.forEach(function(segment) {
       n += 1;
       totalCost += segment['cost'];
@@ -457,19 +457,27 @@ function updateRouteInformation(features, release) {
       var s = nodes.shift();
       var e = nodes.pop();
       var id = 'route-detail' + n;
-      text += '<p>';
-      text += '<b>' + s + '</b> to <b>' + e + '</b>';
-      text += ' by ' + segment['mode'] + ' (' + tripTime(segment['cost']) + ')';
+      text += '<li>';
+      text += '<b>' + s + '</b> - <b>' + e + '</b>';
+      text += '<span class="route-mode"> by ' + segment['mode'] + "</span>";
       if (nodes.length > 0) {
         text += ' <span class="route-detail-click" onclick="toggleContent(\'' + id + '\')">[details]</span>';
+      }
+      text += ' <span class="trip-time">' + tripTime(segment['cost']) + '</span>';
+      if (nodes.length > 0) {
         text += '<span id="' + id + '" class="route-detail"> via <em>' + nodes.join('</em>, <em>');
         text += '</em></span>';
       }
-      text += '</p>';
+      text += '</li>';
     });
   }
+  text += "</ol>";
 
-  content.innerHTML = text;
+  var title = '<p class="information-title"><b>' + features[0].get('source') + '</b> - <b>' + features.slice(-1)[0].get('target') + '</b>';
+  title += '<span class="trip-time">' + tripTime(totalCost) + '</span></p>';
+
+  titleElement.innerHTML = title;
+  contentElement.innerHTML = text;
 }
 
 function tripTime(hours) {

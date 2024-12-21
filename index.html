@@ -14,29 +14,11 @@
       <div id="popup-content"></div>
     </div>
     <div id="information" class="ol-popup">
-      <button class="minimize-btn" onclick="toggleMinimize()">🗕</button>
+      <div id="information-title"></div>
       <div id="information-content"></div>
-      <div class="blog">Read about how this was made <a href="https://www.jaxartes.net/pages/ottoman-travel/">here</a>.
-      </div>
+      <div class="blog">Read about how this was made <a href="https://www.jaxartes.net/pages/ottoman-travel/">here</a>.</div>
     </div>
     <script>
-        function toggleMinimize() {
-            const infoContent = document.getElementById('information-content');
-            const blogDiv = document.querySelector('.blog');
-            const minimizeBtn = document.querySelector('.minimize-btn');
-            const informationPopup = document.getElementById('information');
-            if (informationPopup.classList.contains('minimized')) {
-                informationPopup.classList.remove('minimized');
-                infoContent.style.display = 'block';
-                blogDiv.style.display = 'block';
-                minimizeBtn.textContent = '🗕';
-            } else {
-                informationPopup.classList.add('minimized');
-                infoContent.style.display = 'none';
-                blogDiv.style.display = 'none';
-                minimizeBtn.textContent = '🗖';
-            }
-        }
         function toggleContent(contentId) {
           const content = document.getElementById(contentId);
           if (content.style.display === 'none' || content.style.display === '') {
