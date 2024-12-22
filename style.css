@@ -25,7 +25,7 @@ html, body {
 
 #information {
   font-family: serif;
-  font-size: 1em;
+  font-size: 0.9em;
   top: 15px;
   right: 15px;
   width: 33%;
@@ -46,7 +46,7 @@ li {
 
 .blog {
   font-family: serif;
-  font-size: 67%;
+  font-size: 0.9em;
   font-style: italic;
   text-align: right;
 }

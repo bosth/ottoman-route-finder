@@ -266,13 +266,28 @@ var markerLayer = new VectorLayer({
   source: new VectorSource({
     features: [],
   }),
-  style: new Style({
-    image: new Icon({
-      src: 'https://openlayers.org/en/latest/examples/data/icon.png',
-      anchor: [0.5, 0],
-      anchorOrigin: 'bottom-right'
-    }),
-  }),
+  style: function(feature) {
+    if (feature === sourceMarker) {
+      return new Style({
+        image: new Icon({
+          src: 'source.png',
+          anchor: [0.5, 0],
+          anchorOrigin: 'bottom-right',
+          scale: 0.5
+        }),
+      });
+    } else if (feature === targetMarker) {
+      return new Style({
+        image: new Icon({
+          src: 'target.png',
+          anchor: [0.5, 0],
+          anchorOrigin: 'bottom-right',
+          scale: 0.5
+        }),
+      });
+    }
+  },
+  zIndex: 9999
 });
 
 function randomMarker() {
@@ -309,7 +324,7 @@ var map = new Map({
   target: 'map',
   controls: defaults({attribution: false}).extend([attribution]),
   layers: [
-    new TileLayer({source: tileSource}),
+    new TileLayer({source: tileSource, zIndex: 1}),
     pathLayer,
     nodeLayer,
     routeLayer,
