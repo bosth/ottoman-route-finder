@@ -185,15 +185,10 @@ const nodeStyle = function(feature) {
     zIndex: rank,
     text: new Text({
       font: (rank + 8) + 'px "Open Sans,sans-serif"',
-      fill: new Fill({
-        color: 'black',
-      }),
       textAlign: 'left',
       textBaseline: 'bottom',
-      stroke: new Stroke({
-        color: 'white',
-        width: 4,
-      }),
+      fill: new Fill({color: "#000"}),
+      stroke: new Stroke({color: "#fff", width: 4})
     }),
   });
   style.getText().setText(feature.get('name'));
@@ -286,8 +281,7 @@ var markerLayer = new VectorLayer({
         }),
       });
     }
-  },
-  zIndex: 9999
+  }
 });
 
 function randomMarker() {
@@ -476,7 +470,7 @@ function updateRouteInformation(features, release) {
       var mode = getModeIcon(segment['mode']);
       text += '<hr/><p>';
       text += mode;
-      text += '<b>' + s + '</b> - <b>' + e + '</b>';
+      text += s + ' - ' + e;
       if (nodes.length > 0) {
         text += ' <span class="route-detail-click" onclick="toggleContent(\'' + id + '\')">[details]</span>';
       }

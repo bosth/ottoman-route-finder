@@ -15,6 +15,6 @@
   "dependencies": {
     "gh-pages": "^6.0.0",
     "humanize-duration": "^3.29.0",
-    "ol": "10.3.1"
+    "ol": "^7.4.0"
   }
 }

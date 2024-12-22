@@ -37,13 +37,6 @@ html, body {
   font-size: 1.25em;
 }
 
-ul,
-li {
-  margin-left:  2px;
-  padding-left: 0px;
-  font-size: 1em;
-}
-
 .blog {
   font-family: serif;
   font-size: 0.9em;
