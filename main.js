@@ -186,12 +186,12 @@ const nodeStyle = function(feature) {
     text: new Text({
       font: (rank + 8) + 'px "Open Sans,sans-serif"',
       fill: new Fill({
-        color: '#000',
+        color: 'black',
       }),
       textAlign: 'left',
       textBaseline: 'bottom',
       stroke: new Stroke({
-        color: '#fff',
+        color: 'white',
         width: 4,
       }),
     }),

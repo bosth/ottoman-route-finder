@@ -71,8 +71,8 @@ li {
 .trip-time {
   color: green;
   float: right;
-  font-size: 80%;
-  vertical-align: bottom;
+  font-size: 67%;
+  vertical-align: center;
 }
 
 p {
