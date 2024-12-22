@@ -414,7 +414,9 @@ function createRoute(source, target, release) {
   wfsRequest.send();
 }
 
-
+function getModeIcon(mode) {
+  return `<img src="${mode}.png" title="${mode}" class="icon">`;
+}
 
 function updateRouteInformation(features, release) {
   var titleElement = document.getElementById('information-title');
@@ -449,7 +451,6 @@ function updateRouteInformation(features, release) {
     var totalCost = 0;
     var n = 0;
 
-    text += '<ol>';
     segments.forEach(function(segment) {
       n += 1;
       totalCost += segment['cost'];
@@ -457,9 +458,10 @@ function updateRouteInformation(features, release) {
       var s = nodes.shift();
       var e = nodes.pop();
       var id = 'route-detail' + n;
-      text += '<li>';
+      var mode = getModeIcon(segment['mode']);
+      text += '<hr/><p>';
+      text += mode;
       text += '<b>' + s + '</b> - <b>' + e + '</b>';
-      text += '<span class="route-mode"> by ' + segment['mode'] + "</span>";
       if (nodes.length > 0) {
         text += ' <span class="route-detail-click" onclick="toggleContent(\'' + id + '\')">[details]</span>';
       }
@@ -468,10 +470,9 @@ function updateRouteInformation(features, release) {
         text += '<span id="' + id + '" class="route-detail"> via <em>' + nodes.join('</em>, <em>');
         text += '</em></span>';
       }
-      text += '</li>';
+      text += '</p>';
     });
   }
-  text += "</ol>";
 
   var title = '<p class="information-title"><b>' + features[0].get('source') + '</b> - <b>' + features.slice(-1)[0].get('target') + '</b>';
   title += '<span class="trip-time">' + tripTime(totalCost) + '</span></p>';
