@@ -318,7 +318,7 @@ var map = new Map({
   target: 'map',
   controls: defaults({attribution: false}).extend([attribution]),
   layers: [
-    new TileLayer({source: tileSource, zIndex: 1}),
+    new TileLayer({source: tileSource}),
     pathLayer,
     nodeLayer,
     routeLayer,
