@@ -9,24 +9,24 @@
   </head>
   <body>
     <div id="map"></div>
-    <script type="module" src="./main.js"></script>
     <div id="popup" class="ol-popup">
       <div id="popup-content"></div>
     </div>
     <div id="information" class="ol-popup">
       <div id="information-title"></div>
+      <span class="route-detail-click" onclick="toggleContent('options')">[options]</span>
+        <span id="options" hidden>
+          <input type="checkbox" id="toggle-rail" name="toggle-rail" checked onchange="updateMode()">
+          <label for="toggle-rail">Rail</label>
+          <br/>
+          <input type="checkbox" id="toggle-ship" name="toggle-ship" checked onchange="updateMode()">
+          <label for="toggle-ship">Ship</label>
+        </span>
+      </span>
       <div id="information-content"></div>
-      <hr><div class="blog">Read about how this was made <a href="https://www.jaxartes.net/pages/ottoman-travel/">here</a>.</div>
+      <hr>
+      <div class="blog">Read about how this was made <a href="https://www.jaxartes.net/pages/ottoman-travel/">here</a>.</div>
     </div>
-    <script>
-        function toggleContent(contentId) {
-          const content = document.getElementById(contentId);
-          if (content.style.display === 'none' || content.style.display === '') {
-              content.style.display = 'block';
-          } else {
-              content.style.display = 'none';
-          }
-        };
-    </script>
+    <script type="module" src="./main.js"></script>
   </body>
 </html>

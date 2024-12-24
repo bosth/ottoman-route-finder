@@ -16,7 +16,6 @@ import {all} from 'ol/loadingstrategy';
 import Overlay from 'ol/Overlay';
 import humanizeDuration from 'humanize-duration';
 
-
 const wfsUrl = import.meta.env.VITE_SERVER_URL;
 const wfsFeaturePrefix = 'ottoman';
 const wfsOutputFormat = 'application/json';
@@ -312,7 +311,6 @@ nodeSource.on('change', function() {
   createRoute(sourceMarker.get("node"), targetMarker.get("node"), true);
 });
 
-
 // MAP
 var map = new Map({
   target: 'map',
@@ -395,6 +393,17 @@ function createRoute(source, target, release) {
   }
   var sourceId = source.getId().split(".")[1];
   var targetId = target.getId().split(".")[1];
+  var rail = document.getElementById('toggle-rail').checked;
+  var ship = document.getElementById('toggle-ship').checked;
+  var modes = 'ferry,tram,chaussee,road,metro';
+  if (rail) {
+    modes += ',rail';
+  }
+  if (ship) {
+    modes += ',ship';
+  }
+  modes = modes.replace(/,/g, '%5C,');
+
   var wfsRequest = new XMLHttpRequest();
   var wfsParams = 'service=WFS&' +
       'version=' + wfsVersion + '&' +
@@ -403,6 +412,7 @@ function createRoute(source, target, release) {
       'outputFormat=' + wfsOutputFormat + '&' +
       'srsname=EPSG:3857' + '&' +
       'viewparams=' +
+      'modes:' + modes + ';' +
       'source:' + sourceId + ';' +
       'target:' + targetId;
   var wfsUrlWithParams = wfsUrl + '/ows/?' + wfsParams;
@@ -523,3 +533,18 @@ map.on('pointermove', function(evt) {
     popup.getElement().style.display = 'none';
   }
 });
+
+function toggleContent(contentId) {
+  const content = document.getElementById(contentId);
+  if (content.style.display === 'none' || content.style.display === '') {
+      content.style.display = 'block';
+  } else {
+      content.style.display = 'none';
+  }
+}
+
+function updateMode() {
+  createRoute(sourceMarker.get("node"), targetMarker.get("node"), true);
+}
+window.updateMode = updateMode;
+window.toggleContent = toggleContent;
