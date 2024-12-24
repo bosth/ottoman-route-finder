@@ -84,3 +84,9 @@ p {
 hr {
   border: 0px dashed #999999;
 }
+
+#year-slider {
+  margin-top: 10px;
+  justify-content: space-between;
+  display: flex;
+}

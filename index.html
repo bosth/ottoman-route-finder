@@ -16,11 +16,27 @@
       <div id="information-title"></div>
       <span class="route-detail-click" onclick="toggleContent('options')">[options]</span>
         <span id="options" hidden>
+          <p>Choose which types of transportation to use:</p>
+          <p>
           <input type="checkbox" id="toggle-rail" name="toggle-rail" checked onchange="updateMode()">
           <label for="toggle-rail">Rail</label>
           <br/>
           <input type="checkbox" id="toggle-ship" name="toggle-ship" checked onchange="updateMode()">
           <label for="toggle-ship">Ship</label>
+          </p>
+          <br/>
+          <p>
+            <label for="year-slider">Choose the current year (this affects which rail options are available):</label>
+            <!--label for="year-slider">Year</label-->
+            <input type="range" id="year-slider" name="year-slider" min="1860" max="1914" value="1914" oninput="updateMode()" list="yearmarkers">
+            <datalist id="yearmarkers">
+              <option value="1860"></option>
+              <option value="1892" label="1892"></option>
+              <option value="1908"></option>
+              <option value="1914" label="hot!"></option>
+            </datalist>
+            <output id="year-value"></output>
+          </p>
         </span>
       </span>
       <div id="information-content"></div>
@@ -28,5 +44,13 @@
       <div class="blog">Read about how this was made <a href="https://www.jaxartes.net/pages/ottoman-travel/">here</a>.</div>
     </div>
     <script type="module" src="./main.js"></script>
+    <script>
+      const value = document.querySelector("#year-value");
+      const input = document.querySelector("#year-slider");
+      value.textContent = input.value;
+      input.addEventListener("input", (event) => {
+        value.textContent = event.target.value;
+      });
+    </script>
   </body>
 </html>

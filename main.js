@@ -391,10 +391,11 @@ function createRoute(source, target, release) {
   if (source === undefined || target === undefined) {
     return;
   }
-  var sourceId = source.getId().split(".")[1];
-  var targetId = target.getId().split(".")[1];
-  var rail = document.getElementById('toggle-rail').checked;
-  var ship = document.getElementById('toggle-ship').checked;
+  const sourceId = source.getId().split(".")[1];
+  const targetId = target.getId().split(".")[1];
+  const rail = document.getElementById('toggle-rail').checked;
+  const ship = document.getElementById('toggle-ship').checked;
+  const year = document.querySelector("#year-slider").value;
   var modes = 'ferry,tram,chaussee,road,metro';
   if (rail) {
     modes += ',rail';
@@ -414,7 +415,8 @@ function createRoute(source, target, release) {
       'viewparams=' +
       'modes:' + modes + ';' +
       'source:' + sourceId + ';' +
-      'target:' + targetId;
+      'target:' + targetId + ';' +
+      'year:' + year;
   var wfsUrlWithParams = wfsUrl + '/ows/?' + wfsParams;
   wfsRequest.open('GET', wfsUrlWithParams, true);
   wfsRequest.onreadystatechange = function() {
