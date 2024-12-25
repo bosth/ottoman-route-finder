@@ -28,12 +28,14 @@
           <p>
             <label for="year-slider">Choose the current year (this affects which rail options are available):</label>
             <!--label for="year-slider">Year</label-->
-            <input type="range" id="year-slider" name="year-slider" min="1860" max="1914" value="1914" oninput="updateMode()" list="yearmarkers">
+            <input type="range" id="year-slider" name="year-slider" min="1860" max="1918" value="1914" oninput="updateMode()" list="yearmarkers">
             <datalist id="yearmarkers">
               <option value="1860"></option>
-              <option value="1892" label="1892"></option>
+              <option value="1878"></option>
+              <option value="1892"></option>
               <option value="1908"></option>
-              <option value="1914" label="hot!"></option>
+              <option value="1914"></option>
+              <option value="1918"></option>
             </datalist>
             <output id="year-value"></output>
           </p>
