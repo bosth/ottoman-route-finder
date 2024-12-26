@@ -449,8 +449,13 @@ function updateRouteInformation(features, release) {
     var cost = 0;
     var lastMode = null;
     var nodes = [];
+    var mode;
     features.forEach(function(f) {
-      if (f.get('mode') == lastMode) {
+      mode = f.get('mode');
+      if (mode == 'chaussee') {
+        mode = 'road';
+      }
+      if (mode == lastMode) {
         cost += f.get('cost');
         nodes.push(f.get('target'));
       } else {
@@ -461,10 +466,10 @@ function updateRouteInformation(features, release) {
         cost = f.get('cost');
         nodes = [f.get('source')];
         nodes.push(f.get('target'));
-        lastMode = f.get('mode');
+        lastMode = mode;
       }
       segment['cost'] = cost;
-      segment['mode'] = lastMode;
+      segment['mode'] = mode;
       segment['nodes'] = nodes;
     });
 
@@ -527,8 +532,10 @@ map.on('pointermove', function(evt) {
     popup.setPosition(coord);
     var content = document.getElementById('popup-content');
     var cost = tripTime(feature.get('cost'));
-    var text = feature.get('source') + ' - ' + feature.get('target') +
-      '<br/><em>' + cost + ' by ' + feature.get('mode') + '</em>';
+    var mode = feature.get('mode');
+    var text = `<img src="${mode}.png" title="${mode}" class="icon">`;
+    text += feature.get('source') + ' - ' + feature.get('target') +
+      '<br/><em>' + cost + ' by ' + mode + '</em>';
     content.innerHTML = text;
     popup.getElement().style.display = 'block';
   } else {
@@ -548,5 +555,57 @@ function toggleContent(contentId) {
 function updateMode() {
   createRoute(sourceMarker.get("node"), targetMarker.get("node"), true);
 }
+
+// Add an overlay for the selection popup
+var selectionPopup = new Overlay({
+  element: document.getElementById('selection-popup'),
+  autoPan: true
+});
+map.addOverlay(selectionPopup);
+
+// Add event listener for right-click on the map
+map.getViewport().addEventListener('contextmenu', function(evt) {
+  evt.preventDefault();
+  var coordinate = map.getEventCoordinate(evt);
+  selectionPopup.setPosition(coordinate);
+  document.getElementById('selection-popup').style.display = 'block';
+});
+
+// Function to set the route marker
+function setRouteMarker(type) {
+  var coordinate = selectionPopup.getPosition();
+  var pixel = map.getPixelFromCoordinate(coordinate);
+  var node = null;
+  var rank = -1;
+
+  // Find the nearest node
+  map.forEachFeatureAtPixel(pixel, function(feature) {
+    if (feature.getProperties().rank > rank) {
+      rank = feature.getProperties().rank;
+      node = feature;
+    }
+  }, {
+    layerFilter: function(layer) {
+      return layer === nodeLayer;
+    },
+    hitTolerance: 20
+  });
+
+  if (node) {
+    if (type === 'start') {
+      sourceMarker.setGeometry(node.getGeometry().clone());
+      sourceMarker.set('node', node);
+    } else if (type === 'end') {
+      targetMarker.setGeometry(node.getGeometry().clone());
+      targetMarker.set('node', node);
+    }
+    createRoute(sourceMarker.get('node'), targetMarker.get('node'), true);
+  }
+
+  // Hide the popup
+  document.getElementById('selection-popup').style.display = 'none';
+}
+
+window.setRouteMarker = setRouteMarker;
 window.updateMode = updateMode;
 window.toggleContent = toggleContent;

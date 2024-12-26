@@ -19,9 +19,11 @@
           <p>Choose which types of transportation to use:</p>
           <p>
           <input type="checkbox" id="toggle-rail" name="toggle-rail" checked onchange="updateMode()">
+      	  <img src="rail.png" alt="End Marker" class="icon" />
           <label for="toggle-rail">Rail</label>
           <br/>
           <input type="checkbox" id="toggle-ship" name="toggle-ship" checked onchange="updateMode()">
+      	  <img src="ship.png" alt="End Marker" class="icon" />
           <label for="toggle-ship">Ship</label>
           </p>
           <br/>
@@ -44,6 +46,15 @@
       <div id="information-content"></div>
       <hr>
       <div class="blog">Read about how this was made <a href="https://www.jaxartes.net/pages/ottoman-travel/">here</a>.</div>
+    </div>
+    <div id="selection-popup" class="ol-popup">
+    <div id="selection-popup-content">
+      <img src="source.png" alt="Start Marker" class="icon" />
+      <button onclick="setRouteMarker('start')">Set Start</button>
+      <br/>
+      <img src="target.png" alt="End Marker" class="icon" />
+      <button onclick="setRouteMarker('end')">Set End</button>
+      </div>
     </div>
     <script type="module" src="./main.js"></script>
     <script>
