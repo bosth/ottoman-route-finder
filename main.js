@@ -508,7 +508,17 @@ function updateRouteInformation(features, release) {
 }
 
 function tripTime(hours) {
-  return humanizeDuration(hours * 60 * 60 * 1000, {round: true, units: ["d", "h", "m"], largest: 2});
+  var minutes = hours * 60;
+  console.log(minutes);
+  if (minutes > 10) {
+    var rounding = 5;
+    if (minutes > 60) {
+      rounding = 30;
+    }
+    minutes = Math.round(minutes / rounding) * rounding;
+  }
+  console.log(minutes);
+  return humanizeDuration(minutes * 60 * 1000, {round: true, units: ["d", "h", "m"], largest: 2});
 }
 
 var popup = new Overlay({
