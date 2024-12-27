@@ -509,7 +509,6 @@ function updateRouteInformation(features, release) {
 
 function tripTime(hours) {
   var minutes = hours * 60;
-  console.log(minutes);
   if (minutes > 10) {
     var rounding = 5;
     if (minutes > 60) {
@@ -517,7 +516,6 @@ function tripTime(hours) {
     }
     minutes = Math.round(minutes / rounding) * rounding;
   }
-  console.log(minutes);
   return humanizeDuration(minutes * 60 * 1000, {round: true, units: ["d", "h", "m"], largest: 2});
 }
 
