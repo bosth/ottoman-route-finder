@@ -1,6 +1,6 @@
 export default {
   build: {
-    sourcemap: true,
+    minify: 'esbuild'
   },
   base: "/ottoman-route-finder/",
 }
