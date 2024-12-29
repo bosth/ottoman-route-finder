@@ -16,16 +16,13 @@ import {all} from 'ol/loadingstrategy';
 import Overlay from 'ol/Overlay';
 import humanizeDuration from 'humanize-duration';
 
-const wfsUrl = import.meta.env.VITE_SERVER_URL;
-const wfsFeaturePrefix = 'ottoman';
-const wfsOutputFormat = 'application/json';
-const wfsVersion = '2.0.0';
+const server_url = import.meta.env.VITE_SERVER_URL;
 const key = 'yvGZ8CUmA6zbqBiHuxk5';
 var allowRefresh = true;
 setInterval(function(){allowRefresh = true}, 30);
 
 // STYLES
-const pathStyle = function(feature) {
+const edgeStyle = function(feature) {
   var mode = feature.get('mode');
   var style;
   switch (mode) {
@@ -196,28 +193,14 @@ const nodeStyle = function(feature) {
 
 
 // SOURCES
-var nodeSource = new VectorSource({
-  format: new GeoJSON(),
-  url: function (extent) {
-    return (
-      wfsUrl + '/' +
-      '/ows?' +
-      'service=WFS&version=1.3.0&request=GetFeature&typeName=' + wfsFeaturePrefix + ':nodes&' +
-      'srsname=EPSG:3857&outputFormat=' + wfsOutputFormat);
-  },
-  strategy: all
+const nodeSource = new VectorSource({
+    url: `${server_url}/nodes`,
+    format: new GeoJSON({ featureProjection: "EPSG:3857" })
 });
 
-var pathSource = new VectorSource({
-  format: new GeoJSON(),
-  url: function (extent) {
-    return (
-      wfsUrl + '/' +
-      '/ows?' +
-      'service=WFS&version=1.3.0&request=GetFeature&typeName=' + wfsFeaturePrefix + ':edges_render&' +
-      'srsname=EPSG:3857&outputFormat=' + wfsOutputFormat);
-  },
-  strategy: all
+const edgeSource = new VectorSource({
+    url: `${server_url}/edges`,
+    format: new GeoJSON({ featureProjection: "EPSG:3857" })
 });
 
 const attribution = new Attribution({
@@ -230,21 +213,17 @@ const tileSource = new TileJSON({
   crossOrigin: 'anonymous'
 });
 
-
 // LAYERS
-var nodeLayer = new VectorLayer({
-  source: nodeSource,
-  style: nodeStyle,
-  declutter: true,
-  crossOrigin: 'anonymous'
-});
-
-const pathLayer = new VectorLayer({
-  source: pathSource,
-  style: pathStyle,
-  crossOrigin: 'anonymous'
-});
-
+const nodeLayer = new VectorLayer({
+    source: nodeSource,
+    style: nodeStyle,
+    declutter: true
+  });
+const edgeLayer = new VectorLayer({
+    source: edgeSource,
+    style: edgeStyle,
+    declutter: true
+  });
 const routeLayer = new VectorLayer({
   style: new Style({
     stroke: new Stroke({
@@ -284,15 +263,17 @@ var markerLayer = new VectorLayer({
 });
 
 function randomMarker() {
-  var i = Math.floor(Math.random() * nodeLayer.getSource().getFeatures().length);
-  var feature = nodeLayer.getSource().getFeatures()[i];
+  const source = nodeLayer.getSource();
+  const features = source.getFeatures();
+  var i = Math.floor(Math.random() * features.length);
+  var feature = features[i];
   return new Feature({
     geometry: feature.getGeometry().clone(),
     node: feature
   });
 }
 
-nodeSource.on('change', function() {
+nodeLayer.on('change', function() {
   sourceMarker = randomMarker();
   targetMarker = randomMarker();
   markerLayer.getSource().addFeature(sourceMarker);
@@ -317,7 +298,7 @@ var map = new Map({
   controls: defaults({attribution: false}).extend([attribution]),
   layers: [
     new TileLayer({source: tileSource}),
-    pathLayer,
+    edgeLayer,
     nodeLayer,
     routeLayer,
     markerLayer,
@@ -386,13 +367,12 @@ function updateMarker(marker, node, release) {
   }
 }
 
-
 function createRoute(source, target, release) {
   if (source === undefined || target === undefined) {
     return;
   }
-  const sourceId = source.getId().split(".")[1];
-  const targetId = target.getId().split(".")[1];
+  const sourceId = source.getId();
+  const targetId = target.getId();
   const rail = document.getElementById('toggle-rail').checked;
   const ship = document.getElementById('toggle-ship').checked;
   const year = document.querySelector("#year-slider").value;
@@ -403,43 +383,35 @@ function createRoute(source, target, release) {
   if (ship) {
     modes += ',ship';
   }
-  modes = modes.replace(/,/g, '%5C,');
+  const url = new URL(`${server_url}/route`);
+  const params = {source: sourceId, target: targetId, modes: modes, year: year };
+  url.search = new URLSearchParams(params).toString();
 
-  var wfsRequest = new XMLHttpRequest();
-  var wfsParams = 'service=WFS&' +
-      'version=' + wfsVersion + '&' +
-      'request=GetFeature&' +
-      'typeNames=' + wfsFeaturePrefix + ':' + 'route' + '&' +
-      'outputFormat=' + wfsOutputFormat + '&' +
-      'srsname=EPSG:3857' + '&' +
-      'viewparams=' +
-      'modes:' + modes + ';' +
-      'source:' + sourceId + ';' +
-      'target:' + targetId + ';' +
-      'year:' + year;
-  var wfsUrlWithParams = wfsUrl + '/ows/?' + wfsParams;
-  wfsRequest.open('GET', wfsUrlWithParams, true);
-  wfsRequest.onreadystatechange = function() {
-    if (wfsRequest.readyState == 4 && wfsRequest.status == 200) {
-      var wfsSource = new VectorSource({
-        format: new GeoJSON(),
-        url: function(extent) {
-          return wfsUrlWithParams;
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+        const features = new GeoJSON().readFeatures(data, {featureProjection: 'EPSG:3857'});
+        const routeSource = new VectorSource({
+            features: features,
+        });
+
+        routeLayer.setSource(routeSource);
+        if (release == true) {
+          routeLayer.once('postrender', () => {
+              updateRouteInformation(features);
+          });
         }
-      });
-      routeLayer.setSource(wfsSource);
-      var gj = new GeoJSON().readFeatures(wfsRequest.responseText);
-      updateRouteInformation(gj, release);
-    }
-  };
-  wfsRequest.send();
+    })
+    .catch(error => {
+        console.error('Error fetching GeoJSON data:', error);
+    });
 }
 
 function getModeIcon(mode) {
   return `<img src="${mode}.png" title="${mode}" class="icon">`;
 }
 
-function updateRouteInformation(features, release) {
+function updateRouteInformation(features) {
   var titleElement = document.getElementById('information-title');
   var contentElement = document.getElementById('information-content');
   var text = '';
