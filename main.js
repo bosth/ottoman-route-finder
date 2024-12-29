@@ -390,7 +390,12 @@ function createRoute(source, target, release) {
   fetch(url)
     .then(response => response.json())
     .then(data => {
-        const features = new GeoJSON().readFeatures(data, {featureProjection: 'EPSG:3857'});
+        var features;
+        if (data["features"] == null) {
+          features = null;
+        } else {
+          features = new GeoJSON().readFeatures(data, {featureProjection: 'EPSG:3857'});
+        }
         const routeSource = new VectorSource({
             features: features,
         });
@@ -415,15 +420,15 @@ function updateRouteInformation(features) {
   var titleElement = document.getElementById('information-title');
   var contentElement = document.getElementById('information-content');
   var text = '';
-  if (features.length > 0) {
+  if (features != null && features.length > 0) {
     var segments = [];
     var segment = {};
     var cost = 0;
     var lastMode = null;
     var nodes = [];
-    var mode;
+    var title;
     features.forEach(function(f) {
-      mode = f.get('mode');
+      var mode = f.get('mode');
       if (mode == 'chaussee') {
         mode = 'road';
       }
@@ -456,7 +461,7 @@ function updateRouteInformation(features) {
       var s = nodes.shift();
       var e = nodes.pop();
       var id = 'route-detail' + n;
-      var mode = getModeIcon(segment['mode']);
+      const mode = getModeIcon(segment['mode']);
       text += '<hr/><p>';
       text += mode;
       text += s + ' - ' + e;
@@ -470,10 +475,12 @@ function updateRouteInformation(features) {
       }
       text += '</p>';
     });
-  }
 
-  var title = '<p class="information-title"><b>' + features[0].get('source') + '</b> - <b>' + features.slice(-1)[0].get('target') + '</b>';
-  title += '<span class="trip-time">' + tripTime(totalCost) + '</span></p>';
+    title = '<p class="information-title"><b>' + features[0].get('source') + '</b> - <b>' + features.slice(-1)[0].get('target') + '</b>';
+    title += '<span class="trip-time">' + tripTime(totalCost) + '</span></p>';
+  } else {
+    title = '<p class="information-title">No route</p>';
+  }
 
   titleElement.innerHTML = title;
   contentElement.innerHTML = text;
