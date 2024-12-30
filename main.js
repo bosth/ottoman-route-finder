@@ -95,6 +95,7 @@ const edgeStyle = function(feature) {
       ];
     case 'metro':
     case 'tram':
+    case 'electric tram':
       return new Style({
         stroke: new Stroke({
           color: 'black',
@@ -376,7 +377,7 @@ function createRoute(source, target, release) {
   const rail = document.getElementById('toggle-rail').checked;
   const ship = document.getElementById('toggle-ship').checked;
   const year = document.querySelector("#year-slider").value;
-  var modes = 'ferry,tram,chaussee,road,metro';
+  var modes = 'ferry,tram,chaussee,road,metro,electric tram';
   if (rail) {
     modes += ',rail';
   }
