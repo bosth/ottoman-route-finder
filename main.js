@@ -24,7 +24,6 @@ setInterval(function(){allowRefresh = true}, 30);
 // STYLES
 const edgeStyle = function(feature) {
   var mode = feature.get('mode');
-  var style;
   switch (mode) {
     case 'ferry':
       return new Style({
@@ -95,16 +94,21 @@ const edgeStyle = function(feature) {
       ];
     case 'metro':
     case 'tram':
-    case 'electric tram':
       return new Style({
         stroke: new Stroke({
           color: 'black',
+          width: 1.5,
+        })
+      });
+    case 'electric tram':
+      return new Style({
+        stroke: new Stroke({
+          color: 'yellow',
           width: 2,
         })
       });
     default:
   }
-  return style;
 };
 
 const nodeStyle = function(feature) {
