@@ -77,6 +77,7 @@ const edgeStyle = function(feature) {
           })
         })
       ];
+      break;
     case 'road':
       return [
         new Style({
@@ -92,7 +93,16 @@ const edgeStyle = function(feature) {
           })
         })
       ];
+      break;
     case 'metro':
+      return new Style({
+        stroke: new Stroke({
+          color: 'black',
+          width: 2,
+          lineDash: [2,4],
+        })
+      });
+      break;
     case 'tram':
       return new Style({
         stroke: new Stroke({
