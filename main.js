@@ -209,12 +209,12 @@ const nodeStyle = function(feature) {
 
 // SOURCES
 const nodeSource = new VectorSource({
-    url: `${server_url}/nodes`,
+    url: `${server_url}/v1/nodes`,
     format: new GeoJSON({ featureProjection: "EPSG:3857" })
 });
 
 const edgeSource = new VectorSource({
-    url: `${server_url}/edges`,
+    url: `${server_url}/v1/edges`,
     format: new GeoJSON({ featureProjection: "EPSG:3857" })
 });
 
@@ -398,7 +398,7 @@ function createRoute(source, target, release) {
   if (ship) {
     modes += ',ship';
   }
-  const url = new URL(`${server_url}/route`);
+  const url = new URL(`${server_url}/v1/route`);
   const params = {source: sourceId, target: targetId, modes: modes, year: year };
   url.search = new URLSearchParams(params).toString();
 
